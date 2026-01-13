@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, Share2, AlertTriangle, ChevronRight, ChevronLeft, Star, PenTool, Maximize2, ArrowRight, ShoppingBag, MessageSquare } from 'lucide-react';
+import { Heart, Share2, AlertTriangle, ChevronRight, ChevronLeft, Star, PenTool, Maximize2, ArrowRight, ShoppingBag, MessageSquare, Info } from 'lucide-react';
 import ReviewCard from '../components/ReviewCard';
 import ReviewForm from '../components/ReviewForm';
 import FullScreenImageModal from '../components/FullScreenImageModal';
 import LoadingScreen from '../components/LoadingScreen';
-import { getCarById } from '../services/car.service';
+import { getCarById, getRelatedCars } from '../services/car.service';
 import { addFavorite, removeFavorite, checkFavorite } from '../services/favorite.service';
 import { getReviewsByCar, getCommonFaults, createReview } from '../services/review.service';
 
@@ -27,6 +27,20 @@ const CarDetails = () => {
     const [reviews, setReviews] = useState([]);
     const [commonFaults, setCommonFaults] = useState([]);
     const [showReviewForm, setShowReviewForm] = useState(false);
+    const [activeVersionIndex, setActiveVersionIndex] = useState(0);
+    const [relatedYears, setRelatedYears] = useState([]);
+    const [activeTooltip, setActiveTooltip] = useState(null);
+    const tabsContainerRef = useRef(null);
+
+    const scrollTabs = (direction) => {
+        if (tabsContainerRef.current) {
+            const scrollAmount = 200;
+            tabsContainerRef.current.scrollBy({
+                left: direction === 'right' ? scrollAmount : -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -40,6 +54,14 @@ const CarDetails = () => {
             setReviews(reviewsData);
             setCommonFaults(faultsData);
             setActiveImage(carData.mainImageUrl);
+
+            // Fetch related years
+            try {
+                const related = await getRelatedCars(carData.make, carData.model, id);
+                setRelatedYears(related);
+            } catch (err) {
+                console.error("Error fetching related years:", err);
+            }
 
             // Aggregate photos
             const officialPhotos = [
@@ -67,6 +89,8 @@ const CarDetails = () => {
     };
 
     useEffect(() => {
+        setActiveVersionIndex(0);
+        setRelatedYears([]); // Reset to prevent phantom duplicates
         fetchData();
     }, [id]);
 
@@ -160,6 +184,25 @@ const CarDetails = () => {
         topSpeed: 'Velocidad Máxima'
     };
 
+    const specExplanations = {
+        transmissionType: 'Mecanismo que transmite la potencia del motor a las ruedas. Puede ser Manual (stick) o Automática.',
+        transmission: 'Detalles específicos sobre la caja de cambios, como número de velocidades o tecnología (CVT, DSG, etc.).',
+        engine: 'El corazón del auto. Define la cilindrada (tamaño) y configuración (V6, V8, 4 en línea) que genera la potencia.',
+        horsepower: 'La potencia bruta del motor. Más caballos significan mayor velocidad máxima y capacidad de mantener velocidad.',
+        torque: 'La fuerza de giro del motor. Un torque alto da mejor aceleración inicial y capacidad de remolque.',
+        drivetrain: 'Indica qué ruedas reciben la potencia: FWD (Delantera), RWD (Trasera), AWD/4WD (Todas).',
+        fuelType: 'El tipo de combustible que utiliza: Gasolina, Diesel, Híbrido o Eléctrico.',
+        fuelEconomy: 'Eficiencia de combustible combinada. Cuántos kilómetros puedes recorrer por litro.',
+        batteryRange: 'Distancia máxima que puede recorrer un vehículo eléctrico con una carga completa.',
+        acceleration0to100: 'Tiempo que tarda en acelerar de 0 a 100 km/h. Menor tiempo indica mayor rapidez.',
+        mpg: 'Millas por galón. Medida de eficiencia usada principalmente en EE.UU.',
+        seatingCapacity: 'Número total de personas que pueden viajar sentadas con cinturón de seguridad.',
+        doors: 'Número de puertas para acceso de pasajeros y carga.',
+        cargoCapacity: 'Volumen del maletero o espacio de carga disponible.',
+        towingCapacity: 'Peso máximo que el vehículo puede remolcar de manera segura.',
+        topSpeed: 'La velocidad límite máxima que puede alcanzar el vehículo.'
+    };
+
     // Helper function to add drivetrain descriptions
     const formatDrivetrainValue = (value) => {
         const drivetrainDescriptions = {
@@ -211,6 +254,32 @@ const CarDetails = () => {
                             </div>
                             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-2">{car.make} {car.model}</h1>
                             <p className="text-xl text-gray-600 dark:text-gray-300">{car.version}</p>
+
+                            {/* Year Navigation Chips */}
+                            {relatedYears.length > 0 && (
+                                <div className="mt-6">
+                                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Modelos Disponibles</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[...relatedYears.filter(y => y.id !== car.id), { id: car.id, year: car.year, version: car.version }]
+                                            .sort((a, b) => b.year - a.year)
+                                            .map((item) => (
+                                                <button
+                                                    key={item.id}
+                                                    onClick={() => item.id !== car.id && navigate(`/car/${item.id}`)}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${item.id === car.id
+                                                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 scale-105 cursor-default'
+                                                        : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-gray-700'
+                                                        }`}
+                                                >
+                                                    {item.year}
+                                                    {item.id === car.id && (
+                                                        <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white font-normal">ACTUAL</span>
+                                                    )}
+                                                </button>
+                                            ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="flex space-x-3">
@@ -330,29 +399,88 @@ const CarDetails = () => {
 
                     {/* Specs */}
                     <div>
-                        <div className="glass-card p-6 rounded-3xl">
-                            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-                                <PenTool className="h-5 w-5 text-primary-500" />
-                                <span className="text-gray-900 dark:text-white">Especificaciones</span>
-                            </h2>
-                            <dl className="space-y-4">
-                                {car.specs && Object.entries(car.specs)
-                                    .filter(([key, value]) => {
-                                        // Filter out isElectric and empty values
-                                        if (key === 'isElectric') return false;
-                                        if (value === null || value === undefined || value === '') return false;
-                                        return true;
-                                    })
-                                    .map(([key, value]) => (
-                                        <div key={key} className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
-                                            <dt className="text-gray-500 dark:text-gray-400 capitalize text-sm">
-                                                {specTranslations[key] || key.replace(/([A-Z])/g, ' $1').trim()}
-                                            </dt>
-                                            <dd className="font-semibold text-gray-900 dark:text-white text-right">
-                                                {key === 'drivetrain' ? formatDrivetrainValue(value) : value}
-                                            </dd>
-                                        </div>
+                        {/* Version Tabs (Browser Style) */}
+                        {car.versions && car.versions.length > 0 && (
+                            <div className="relative z-10 group">
+                                <div
+                                    ref={tabsContainerRef}
+                                    className="flex gap-2 px-4 overflow-x-auto scrollbar-hide -mb-px"
+                                >
+                                    {car.versions.map((v, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setActiveVersionIndex(idx)}
+                                            className={`px-6 py-3 rounded-t-2xl text-sm font-bold transition-all relative ${activeVersionIndex === idx
+                                                ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-primary-600 dark:text-primary-400 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]'
+                                                : 'bg-gray-200/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                                }`}
+                                        >
+                                            {v.name}
+                                            {activeVersionIndex === idx && (
+                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/80 dark:bg-slate-900/80"></div>
+                                            )}
+                                        </button>
                                     ))}
+                                </div>
+                                <button
+                                    onClick={() => scrollTabs('right')}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-slate-800/80 p-2 rounded-full shadow-lg text-primary-600 dark:text-primary-400 hover:bg-white dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 md:opacity-100 backdrop-blur-sm z-30 translate-x-1/2"
+                                    aria-label="Scroll right"
+                                >
+                                    <ChevronRight className="h-5 w-5" />
+                                </button>
+                            </div>
+                        )}
+
+                        <div className={`glass-card p-6 rounded-3xl ${car.versions && car.versions.length > 0 ? 'rounded-tl-none' : ''}`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <PenTool className="h-5 w-5 text-primary-500" />
+                                    <span className="text-gray-900 dark:text-white">Especificaciones</span>
+                                </h2>
+
+                            </div>
+
+                            <dl className="space-y-4">
+                                {(car.versions && car.versions.length > 0 ? car.versions[activeVersionIndex].specs : car.specs) &&
+                                    Object.entries((car.versions && car.versions.length > 0 ? car.versions[activeVersionIndex].specs : car.specs))
+                                        .filter(([key, value]) => {
+                                            // Filter out isElectric and empty values
+                                            if (key === 'isElectric') return false;
+                                            if (value === null || value === undefined || value === '') return false;
+                                            return true;
+                                        })
+                                        .map(([key, value]) => (
+                                            <div key={key} className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
+                                                <dt className="text-gray-500 dark:text-gray-400 capitalize text-sm flex items-center gap-1.5 relative">
+                                                    {specTranslations[key] || key.replace(/([A-Z])/g, ' $1').trim()}
+                                                    {specExplanations[key] && (
+                                                        <div
+                                                            className="relative flex items-center"
+                                                            onMouseEnter={() => setActiveTooltip(key)}
+                                                            onMouseLeave={() => setActiveTooltip(null)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setActiveTooltip(activeTooltip === key ? null : key);
+                                                            }}
+                                                        >
+                                                            <Info
+                                                                className={`h-3.5 w-3.5 cursor-help transition-colors ${activeTooltip === key ? 'text-primary-500' : 'text-gray-400 hover:text-primary-500'}`}
+                                                            />
+                                                            {activeTooltip === key && (
+                                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 md:w-64 bg-gray-900 dark:bg-gray-800 text-white text-xs p-3 rounded-xl shadow-xl z-50 text-center leading-relaxed animate-fade-in">
+                                                                    {specExplanations[key]}
+                                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </dt>
+                                                <dd className="font-semibold text-gray-900 dark:text-white text-right">
+                                                    {key === 'drivetrain' ? formatDrivetrainValue(value) : value}
+                                                </dd>
+                                            </div>
+                                        ))}
                             </dl>
                         </div>
                     </div>
@@ -437,7 +565,7 @@ const CarDetails = () => {
                                         setShowReviewForm(true);
                                     }
                                 }}
-                                className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-primary-500/20 transition-all transform hover:-translate-y-0.5"
+                                className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-primary-500/20 transition-all transform hover:-translate-y-0.5"
                             >
                                 Escribir Reseña
                             </button>
@@ -471,7 +599,7 @@ const CarDetails = () => {
                     initialIndex={currentPhotoIndex}
                 />
             </div>
-        </div>
+        </div >
     );
 };
 

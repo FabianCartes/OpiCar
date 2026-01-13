@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     return (
@@ -7,10 +8,13 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="text-center md:text-left">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            &copy; {new Date().getFullYear()} AutoPlatform. Todos los derechos reservados.
+                            &copy; {new Date().getFullYear()} AutoReal. Todos los derechos reservados.
                         </p>
                     </div>
                     <div className="flex space-x-6">
+                        <Link to="/feedback" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
+                            Sugerencias
+                        </Link>
                         <a href="#" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
                             Política de Privacidad
                         </a>

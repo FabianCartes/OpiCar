@@ -11,7 +11,7 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
-    const [expandedCategory, setExpandedCategory] = useState(null);
+    const [expandedCategories, setExpandedCategories] = useState([]);
     const fileInputRef = useRef(null);
 
     // Hierarchical faults list
@@ -136,7 +136,25 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
     };
 
     const toggleCategory = (catId) => {
-        setExpandedCategory(expandedCategory === catId ? null : catId);
+        setExpandedCategories(prev => {
+            const isExpanded = prev.includes(catId);
+            if (isExpanded) {
+                return prev.filter(id => id !== catId);
+            } else {
+                // Keep categories that have selected tags OR the one being opened
+                // We need to find which tags belong to which category to check this efficiently, 
+                // or just iterate categories.
+                return [...prev, catId].filter(id => {
+                    if (id === catId) return true;
+                    // Find the category object
+                    const category = faultCategories.find(c => c.id === id);
+                    if (!category) return false;
+                    // Check if any of its tags are selected
+                    const hasSelectedTags = category.subTags.some(tag => failureTags.includes(tag.id));
+                    return hasSelectedTags;
+                });
+            }
+        });
     };
 
     return (
@@ -224,9 +242,9 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
                                     className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     <span className="font-medium text-gray-700 dark:text-gray-300">{cat.name}</span>
-                                    {expandedCategory === cat.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                    {expandedCategories.includes(cat.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                                 </button>
-                                {expandedCategory === cat.id && (
+                                {expandedCategories.includes(cat.id) && (
                                     <div className="p-3 bg-white dark:bg-slate-900 flex flex-wrap gap-2 animate-fade-in">
                                         {cat.subTags.map(tag => (
                                             <button

@@ -40,11 +40,11 @@ const Navbar = () => {
                     {/* Logo */}
                     <div className="flex-shrink-0 flex items-center">
                         <Link to="/" className="flex items-center gap-2 group">
-                            <div className="bg-gradient-to-tr from-primary-500 to-secondary-500 p-2 rounded-xl shadow-lg group-hover:shadow-primary-500/30 transition-all duration-300">
+                            <div className="bg-primary-600 p-2 rounded-xl shadow-lg group-hover:shadow-primary-500/30 transition-all duration-300">
                                 <Car className="h-6 w-6 text-white" />
                             </div>
                             <span className="text-2xl font-bold text-gradient">
-                                AutoPlatform
+                                AutoReal
                             </span>
                         </Link>
                     </div>

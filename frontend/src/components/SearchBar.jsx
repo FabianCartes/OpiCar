@@ -62,7 +62,7 @@ const SearchBar = ({ onSearch }) => {
             </div>
             <button
                 type="submit"
-                className="w-full md:w-auto bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white p-3 rounded-xl transition-all shadow-lg hover:shadow-primary-500/30 flex items-center justify-center"
+                className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl transition-all shadow-lg hover:shadow-primary-500/30 flex items-center justify-center"
             >
                 <Search className="h-6 w-6" />
             </button>

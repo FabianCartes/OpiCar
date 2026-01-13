@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { Car, Users, MessageSquare, TrendingUp, Plus, Trash2, Edit, AlertTriangle, Check, X, ArrowLeft, Filter, Search, ExternalLink } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getDashboardStats, getAllUsers, getReportedReviews, dismissReport, deleteReviewFromReport } from '../../services/admin.service';
 import { getCars, deleteCar, updateCar } from '../../services/car.service';
 import DeleteConfirmationModal from '../../components/admin/DeleteConfirmationModal';
@@ -12,7 +12,8 @@ import { carBrands } from '../../data/carData';
 
 const Dashboard = () => {
     const navigate = useNavigate();
-    const [view, setView] = useState('overview'); // overview, cars, users, reports
+    const location = useLocation();
+    const [view, setView] = useState(location.state?.view || 'overview'); // overview, cars, users, reports
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalCars: 0,
@@ -181,7 +182,7 @@ const Dashboard = () => {
             value: stats.totalCars,
             icon: Car,
             color: 'primary',
-            action: () => setView('cars')
+            action: null
         },
         {
             id: 'users',
@@ -189,7 +190,7 @@ const Dashboard = () => {
             value: stats.totalUsers,
             icon: Users,
             color: 'secondary',
-            action: null // Just a stat, users accessed via sidebar
+            action: null
         },
         {
             id: 'reports',
@@ -197,7 +198,7 @@ const Dashboard = () => {
             value: stats.totalReports,
             icon: AlertTriangle,
             color: 'red',
-            action: () => setView('reports')
+            action: null
         },
         {
             id: 'reviews',
@@ -205,7 +206,7 @@ const Dashboard = () => {
             value: stats.totalReviews,
             icon: MessageSquare,
             color: 'green',
-            action: null // Just a stat for now
+            action: null
         },
     ];
 
@@ -241,6 +242,32 @@ const Dashboard = () => {
                     Acciones Rápidas
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                        onClick={() => setView('cars')}
+                        className="group flex items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-secondary-600 to-secondary-700 text-white hover:from-secondary-500 hover:to-secondary-600 transition-all transform hover:-translate-y-1 shadow-lg shadow-secondary-600/30"
+                    >
+                        <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
+                            <Car className="h-6 w-6" />
+                        </div>
+                        <div className="text-left">
+                            <h3 className="font-bold text-lg">Gestionar Autos</h3>
+                            <p className="text-sm text-white/80">Ver y editar el inventario</p>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => setView('reports')}
+                        className="group flex items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-500 hover:to-red-600 transition-all transform hover:-translate-y-1 shadow-lg shadow-red-600/30"
+                    >
+                        <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
+                            <AlertTriangle className="h-6 w-6" />
+                        </div>
+                        <div className="text-left">
+                            <h3 className="font-bold text-lg">Gestionar Reportes</h3>
+                            <p className="text-sm text-white/80">Moderar reseñas reportadas</p>
+                        </div>
+                    </button>
+
                     <Link
                         to="/admin/create-car"
                         className="group flex items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-500 hover:to-primary-600 transition-all transform hover:-translate-y-1 shadow-lg shadow-primary-600/30"
@@ -253,6 +280,7 @@ const Dashboard = () => {
                             <p className="text-sm text-white/80">Agregar un auto a la plataforma</p>
                         </div>
                     </Link>
+
                     <button
                         onClick={() => setView('users')}
                         className="group flex items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-secondary-600 to-secondary-700 text-white hover:from-secondary-500 hover:to-secondary-600 transition-all transform hover:-translate-y-1 shadow-lg shadow-secondary-600/30"
@@ -321,6 +349,7 @@ const Dashboard = () => {
                             <th className="pb-4 font-bold text-gray-600 dark:text-gray-400">Auto</th>
                             <th className="pb-4 font-bold text-gray-600 dark:text-gray-400">Año</th>
                             <th className="pb-4 font-bold text-gray-600 dark:text-gray-400">Motor</th>
+                            <th className="pb-4 font-bold text-gray-600 dark:text-gray-400">Creado Por</th>
                             <th className="pb-4 font-bold text-gray-600 dark:text-gray-400 text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -343,6 +372,16 @@ const Dashboard = () => {
                                 <td className="py-4 text-gray-700 dark:text-gray-300">{car.year}</td>
                                 <td className="py-4 text-gray-700 dark:text-gray-300">
                                     {car.specs?.engine || '-'}
+                                </td>
+                                <td className="py-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-6 w-6 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-xs font-bold text-primary-600 dark:text-primary-400">
+                                            {(car.createdBy?.username || '?').charAt(0).toUpperCase()}
+                                        </div>
+                                        <span className="text-gray-700 dark:text-gray-300 text-sm truncate max-w-[100px]" title={car.createdBy?.username || 'Desconocido'}>
+                                            {car.createdBy?.username || 'Desconocido'}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td className="py-4 text-right">
                                     <div className="flex justify-end gap-2">
@@ -608,24 +647,29 @@ const Dashboard = () => {
 
                 {/* Edit Car Modal */}
                 {editingCar && ReactDOM.createPortal(
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                        <div className="bg-white dark:bg-[#121212] rounded-3xl w-full max-w-4xl p-8 shadow-2xl relative my-8">
-                            <button
-                                onClick={() => setEditingCar(null)}
-                                className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors z-10"
-                            >
-                                <X className="h-6 w-6 text-gray-500" />
-                            </button>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                        <div className="bg-white dark:bg-[#121212] rounded-3xl w-full max-w-4xl shadow-2xl relative flex flex-col max-h-[90vh]">
+                            {/* Modal Header */}
+                            <div className="p-8 pb-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center shrink-0">
+                                <h2 className="text-3xl font-black text-gray-900 dark:text-white italic uppercase">
+                                    Editar Auto
+                                </h2>
+                                <button
+                                    onClick={() => setEditingCar(null)}
+                                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                >
+                                    <X className="h-6 w-6 text-gray-500" />
+                                </button>
+                            </div>
 
-                            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6 italic uppercase">
-                                Editar Auto
-                            </h2>
-
-                            <CarForm
-                                initialData={editingCar}
-                                onSubmit={handleUpdateCar}
-                                submitLabel="Guardar Cambios"
-                            />
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto px-8 pb-8 pt-0">
+                                <CarForm
+                                    initialData={editingCar}
+                                    onSubmit={handleUpdateCar}
+                                    submitLabel="Guardar Cambios"
+                                />
+                            </div>
                         </div>
                     </div>,
                     document.body

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ShieldCheck, Zap, Award, ChevronRight, Gauge, Flame, Trophy } from 'lucide-react';
 import CarCard from '../components/CarCard';
-import { getCars } from '../services/car.service';
+import { getPopularCars } from '../services/car.service';
 
 const Home = () => {
     const [cars, setCars] = useState([]);
@@ -14,7 +14,7 @@ const Home = () => {
     useEffect(() => {
         const fetchCars = async () => {
             try {
-                const data = await getCars();
+                const data = await getPopularCars(3);
                 setCars(data);
             } catch (error) {
                 console.error("Error fetching cars:", error);
@@ -141,15 +141,72 @@ const Home = () => {
                         ></div>
                     </div>
 
-                    {/* Animated gradient orbs */}
-                    <div
-                        className={`absolute top-0 left-0 w-96 h-96 rounded-full transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                        style={{
-                            background: 'radial-gradient(circle, var(--color-primary-500) 0%, transparent 70%)',
-                            filter: 'blur(80px)',
-                            animation: isLoaded ? 'float 8s ease-in-out infinite' : 'none'
-                        }}
-                    ></div>
+                    {/* Animated gradient orbs with Rising Smoke Effect */}
+                    {/* Top Left - Red Smoke */}
+                    <div className="absolute top-0 left-0 w-96 h-96 pointer-events-none">
+                        {/* Base Core */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-60' : 'opacity-0'}`}
+                            style={{
+                                background: 'radial-gradient(circle, var(--color-primary-600) 0%, transparent 70%)',
+                                filter: 'blur(80px)',
+                                animation: isLoaded ? 'smoke-blob 20s ease-in-out infinite alternate' : 'none'
+                            }}
+                        ></div>
+                        {/* Rising Puff 1 */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-40' : 'opacity-0'}`}
+                            style={{
+                                background: 'radial-gradient(circle, var(--color-primary-500) 0%, transparent 70%)',
+                                filter: 'blur(60px)',
+                                animation: isLoaded ? 'smoke-rise 4s ease-out infinite' : 'none',
+                                animationDelay: '0s'
+                            }}
+                        ></div>
+                        {/* Rising Puff 2 */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-30' : 'opacity-0'}`}
+                            style={{
+                                background: 'radial-gradient(circle, var(--color-primary-400) 0%, transparent 70%)',
+                                filter: 'blur(60px)',
+                                animation: isLoaded ? 'smoke-rise 5s ease-out infinite' : 'none',
+                                animationDelay: '2.5s'
+                            }}
+                        ></div>
+                    </div>
+
+                    {/* Bottom Right - White Smoke */}
+                    <div className="absolute bottom-0 right-0 w-96 h-96 pointer-events-none">
+                        {/* Base Core */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-40 dark:opacity-20' : 'opacity-0'}`}
+                            style={{
+                                background: 'radial-gradient(circle, var(--smoke-white) 0%, transparent 70%)',
+                                filter: 'blur(80px)',
+                                animation: isLoaded ? 'smoke-blob 25s ease-in-out infinite alternate-reverse' : 'none'
+                            }}
+                        ></div>
+                        {/* Rising Puff 1 */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-30 dark:opacity-10' : 'opacity-0'}`}
+                            style={{
+                                background: 'radial-gradient(circle, var(--smoke-white) 0%, transparent 70%)',
+                                filter: 'blur(60px)',
+                                animation: isLoaded ? 'smoke-rise 6s ease-out infinite' : 'none',
+                                animationDelay: '1s'
+                            }}
+                        ></div>
+                        {/* Rising Puff 2 */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-20 dark:opacity-5' : 'opacity-0'}`}
+                            style={{
+                                background: 'radial-gradient(circle, var(--smoke-white) 0%, transparent 70%)',
+                                filter: 'blur(60px)',
+                                animation: isLoaded ? 'smoke-rise 7s ease-out infinite' : 'none',
+                                animationDelay: '4s'
+                            }}
+                        ></div>
+                    </div>
                 </div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -199,90 +256,173 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Objectives / Intro Section */}
-            <section ref={cardsRef} className="py-24 bg-slate-50 dark:bg-[#0a0a0a] relative overflow-hidden">
-                {/* Decorative Background Element */}
-                <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none">
-                    <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[150%] bg-gradient-to-b from-transparent via-primary-500/5 to-transparent -rotate-12 blur-3xl"></div>
-                </div>
+            {/* Bento Grid Features Section */}
+            <section ref={cardsRef} className="py-24 bg-white dark:bg-[#0a0a0a] relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {/* Card 1 */}
-                        <div
-                            className={`group relative p-8 rounded-3xl bg-white dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl hover:shadow-2xl hover:border-primary-500/30 transition-all duration-700 delay-100 hover:-translate-y-2 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-                        >
-                            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Gauge className="h-24 w-24 text-primary-600" />
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white italic uppercase mb-4">
+                            Tu Guía en el Mundo <span className="text-primary-600">Automotriz</span>
+                        </h2>
+                        <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[600px]">
+                        {/* Large Feature - Community (Spans 2 cols, 2 rows) */}
+                        <div className={`md:col-span-2 md:row-span-2 group relative rounded-[2rem] overflow-hidden bg-slate-50 dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-100 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-700">
+                                <Trophy className="h-64 w-64 text-primary-600" />
                             </div>
-                            <div className="h-14 w-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <Zap className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+                            <div className="relative h-full flex flex-col justify-end p-8 md:p-12">
+                                <div className="h-16 w-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-6 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300">
+                                    <Trophy className="h-8 w-8" />
+                                </div>
+                                <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-4 italic uppercase">Experiencias Reales</h3>
+                                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
+                                    No compres a ciegas. Lee reseñas honestas de propietarios reales, conoce las fallas comunes y descubre la verdad sobre cada auto antes de invertir tu dinero.
+                                </p>
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4 italic uppercase">Velocidad y Precisión</h3>
-                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Accede a datos técnicos precisos y comparativas detalladas al instante. No pierdas tiempo buscando, encuentra tu máquina ideal en segundos.
-                            </p>
                         </div>
 
-                        {/* Card 2 */}
-                        <div
-                            className={`group relative p-8 rounded-3xl bg-white dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl hover:shadow-2xl hover:border-primary-500/30 transition-all duration-700 delay-300 hover:-translate-y-2 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-                        >
-                            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <ShieldCheck className="h-24 w-24 text-primary-600" />
+                        {/* Tall Feature - Information (Spans 1 col, 2 rows) */}
+                        <div className={`md:col-span-1 md:row-span-2 group relative rounded-[2rem] overflow-hidden bg-slate-900 text-white shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl delay-200 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80"></div>
+                            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+
+                            <div className="relative h-full flex flex-col p-8">
+                                <div className="flex-1 flex items-center justify-center">
+                                    <div className="relative h-40 w-40 rounded-full border-4 border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                                        <div className="absolute inset-0 border-4 border-t-primary-500 border-r-primary-500 border-b-transparent border-l-transparent rounded-full rotate-45 group-hover:rotate-90 transition-transform duration-700"></div>
+                                        <span className="text-4xl font-black italic">INFO</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black mb-2 italic uppercase">Información</h3>
+                                    <p className="text-slate-300 text-sm">
+                                        Datos técnicos precisos para que sepas exactamente qué estás comprando.
+                                    </p>
+                                </div>
                             </div>
-                            <div className="h-14 w-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <Award className="h-7 w-7 text-primary-600 dark:text-primary-400" />
-                            </div>
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4 italic uppercase">Confianza Total</h3>
-                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Opiniones verificadas de dueños reales. Conoce los pros, los contras y las fallas comunes antes de tomar una decisión. Transparencia absoluta.
-                            </p>
                         </div>
 
-                        {/* Card 3 */}
-                        <div
-                            className={`group relative p-8 rounded-3xl bg-white dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl hover:shadow-2xl hover:border-primary-500/30 transition-all duration-700 delay-500 hover:-translate-y-2 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-                        >
-                            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Trophy className="h-24 w-24 text-primary-600" />
+                        {/* Small Feature - Trust (Spans 1 col, 1 row) */}
+                        <div className={`md:col-span-1 md:row-span-1 group relative rounded-[2rem] overflow-hidden bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/20 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-300 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
+                                <ShieldCheck className="h-32 w-32 text-primary-600" />
                             </div>
-                            <div className="h-14 w-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <Award className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+                            <div className="relative h-full p-8 flex flex-col justify-center">
+                                <ShieldCheck className="h-10 w-10 text-primary-600 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 italic uppercase">Seguridad</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400">
+                                    Evita estafas y autos problemáticos con nuestra guía.
+                                </p>
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4 italic uppercase">Comunidad Elite</h3>
-                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Únete a miles de apasionados por el motor. Comparte tus experiencias, sube fotos de tu nave y ayuda a otros a encontrar su camino.
-                            </p>
+                        </div>
+
+                        {/* Small Feature - Community (Spans 1 col, 1 row) */}
+                        <div className={`md:col-span-1 md:row-span-1 group relative rounded-[2rem] overflow-hidden bg-white dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-400 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                            <div className="relative h-full p-8 flex flex-col justify-center">
+                                <Award className="h-10 w-10 text-orange-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 italic uppercase">Comunidad</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400">
+                                    Comparte, pregunta y aprende de otros apasionados.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Featured Cars Section */}
-            <section className="py-24 relative bg-gray-50 dark:bg-dark-bg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-end mb-12">
+            {/* Infinite Marquee Strip */}
+            <div className="bg-primary-500/90 py-4 overflow-hidden rotate-1 transform scale-105 shadow-lg relative z-20">
+                <div className="flex animate-marquee whitespace-nowrap w-max">
+                    {[...Array(20)].map((_, i) => (
+                        <span key={i} className="text-white font-black italic uppercase text-2xl mx-8 flex items-center gap-4">
+                            CONFIABLE <span className="h-2 w-2 bg-white rounded-full"></span>
+                            INFORMATIVO <span className="h-2 w-2 bg-white rounded-full"></span>
+                            ACTUALIZADO <span className="h-2 w-2 bg-white rounded-full"></span>
+                        </span>
+                    ))}
+                </div>
+            </div>
+
+            {/* Featured Cars Section with Patterned Background */}
+            <section className="py-32 relative bg-gray-100 dark:bg-dark-bg overflow-hidden">
+                {/* Subtle Rising Smoke Effects for Borders */}
+                {/* Top Right - Subtle Gray/White Smoke */}
+                <div className="absolute top-[-10%] right-[-5%] w-80 h-80 pointer-events-none z-0">
+                    <div
+                        className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-20 dark:opacity-5' : 'opacity-0'}`}
+                        style={{
+                            background: 'radial-gradient(circle, rgba(200,200,200,0.8) 0%, transparent 70%)',
+                            filter: 'blur(80px)',
+                            animation: isLoaded ? 'smoke-blob 25s ease-in-out infinite alternate' : 'none'
+                        }}
+                    ></div>
+                    <div
+                        className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-10 dark:opacity-0' : 'opacity-0'}`}
+                        style={{
+                            background: 'radial-gradient(circle, rgba(200,200,200,0.6) 0%, transparent 70%)',
+                            filter: 'blur(60px)',
+                            animation: isLoaded ? 'smoke-rise 8s ease-out infinite' : 'none',
+                            animationDelay: '2s'
+                        }}
+                    ></div>
+                </div>
+
+                {/* Bottom Left - Subtle Primary Smoke */}
+                <div className="absolute bottom-[-10%] left-[-5%] w-80 h-80 pointer-events-none z-0">
+                    <div
+                        className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-10 dark:opacity-5' : 'opacity-0'}`}
+                        style={{
+                            background: 'radial-gradient(circle, var(--color-primary-500) 0%, transparent 70%)',
+                            filter: 'blur(80px)',
+                            animation: isLoaded ? 'smoke-blob 22s ease-in-out infinite alternate-reverse' : 'none'
+                        }}
+                    ></div>
+                    <div
+                        className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${isLoaded ? 'opacity-5 dark:opacity-0' : 'opacity-0'}`}
+                        style={{
+                            background: 'radial-gradient(circle, var(--color-primary-400) 0%, transparent 70%)',
+                            filter: 'blur(60px)',
+                            animation: isLoaded ? 'smoke-rise 9s ease-out infinite' : 'none',
+                            animationDelay: '1s'
+                        }}
+                    ></div>
+                </div>
+
+                {/* Dot Pattern Background */}
+                <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                         <div>
-                            <h2 className="text-4xl font-black text-slate-900 dark:text-white italic uppercase mb-2">
-                                Naves Destacadas
+                            <span className="text-primary-600 font-bold tracking-wider uppercase text-sm mb-2 block">Selección Popular</span>
+                            <h2 className="text-5xl font-black text-slate-900 dark:text-white italic uppercase">
+                                Autos Preferidos
                             </h2>
-                            <div className="h-1 w-24 bg-primary-600 rounded-full"></div>
                         </div>
-                        <Link to="/search" className="hidden md:flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold hover:underline">
-                            Ver Todo el Garaje <ChevronRight className="h-5 w-5" />
+                        <Link to="/search" className="group flex items-center gap-3 px-6 py-3 bg-white dark:bg-white/5 rounded-full shadow-md hover:shadow-lg transition-all border border-gray-100 dark:border-white/10">
+                            <span className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors">Ver Todo el Inventario</span>
+                            <div className="h-8 w-8 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
+                                <ChevronRight className="h-4 w-4 text-primary-600 dark:text-primary-400 group-hover:text-white transition-colors" />
+                            </div>
                         </Link>
                     </div>
 
                     {loading ? (
-                        <div className="text-center text-gray-500 dark:text-gray-400">Cargando naves...</div>
+                        <div className="flex justify-center items-center h-64">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {cars.map((car, index) => (
                                 <div
                                     key={car.id}
-                                    className={`transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+                                    className={`transform transition-all duration-700 hover:-translate-y-2 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
                                     style={{
-                                        transitionDelay: `${2.2 + index * 0.1}s`
+                                        transitionDelay: `${0.2 + index * 0.1}s`
                                     }}
                                 >
                                     <CarCard car={car} />
@@ -291,10 +431,12 @@ const Home = () => {
                         </div>
                     )}
 
-                    <div className="mt-12 text-center md:hidden">
-                        <Link to="/search" className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold">
-                            Ver Todo el Garaje <ChevronRight className="h-5 w-5" />
-                        </Link>
+                    <div className="mt-20 text-center">
+                        <div className="inline-block p-1 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+                            <Link to="/search" className="block px-12 py-4 bg-white dark:bg-[#121212] rounded-full text-slate-900 dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                                ¿No encuentras lo que buscas? <span className="text-primary-600 ml-2">Explorar más autos</span>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -24,3 +24,15 @@ export const deleteCar = async (id) => {
     const response = await api.delete(`/cars/${id}`);
     return response.data;
 };
+
+export const getPopularCars = async (limit = 3) => {
+    const response = await api.get(`/cars/popular?limit=${limit}`);
+    return response.data;
+};
+
+export const getRelatedCars = async (make, model, currentId) => {
+    const response = await api.get('/cars/related', {
+        params: { make, model, currentId }
+    });
+    return response.data;
+};

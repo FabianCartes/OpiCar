@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Image, FileText, Settings, Check, ArrowRight, ArrowLeft, Zap, Battery, Upload, X } from 'lucide-react';
+import { Car, Image, FileText, Settings, Check, ArrowRight, ArrowLeft, Zap, Battery, Upload, X, Plus, Trash2 } from 'lucide-react';
 import AutocompleteInput from './AutocompleteInput';
 import ImagePreview from './ImagePreview';
 import { carBrands, carModels, transmissionTypes, engineTypes, fuelTypes, electricMotorTypes } from '../../data/carData';
@@ -9,6 +9,7 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
     const [currentStep, setCurrentStep] = useState(0);
     const [availableModels, setAvailableModels] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [activeVersionIndex, setActiveVersionIndex] = useState(0);
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
@@ -29,33 +30,58 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
         }
     };
 
+    const defaultSpecs = {
+        engine: '',
+        horsepower: '',
+        transmission: '',
+        transmissionType: '',
+        fuelEconomy: '',
+        drivetrain: '',
+        fuelType: '',
+        isElectric: false,
+        batteryRange: '',
+        acceleration0to100: ''
+    };
+
     const defaultData = {
         make: '',
         model: '',
         year: '',
+        // Primary version display name (Step 1)
         version: '',
         description: '',
-        specs: {
-            engine: '',
-            horsepower: '',
-            transmission: '',
-            transmissionType: '',
-            fuelEconomy: '',
-            drivetrain: '',
-            fuelType: '',
-            isElectric: false,
-            batteryRange: '',
-            acceleration0to100: ''
-        },
+        // Root specs kept for structure, but will be populated from versions[0] on submit
+        specs: { ...defaultSpecs },
+        versions: [
+            { name: 'Standard', specs: { ...defaultSpecs } }
+        ],
         mainImageUrl: '',
         photos: []
     };
 
-    const [formData, setFormData] = useState(initialData || defaultData);
+    const normalizeData = (data) => {
+        if (!data) return defaultData;
+
+        // Migration for existing cars without versions
+        if (!data.versions || data.versions.length === 0) {
+            return {
+                ...data,
+                versions: [
+                    {
+                        name: data.version || 'Principal',
+                        specs: data.specs || { ...defaultSpecs }
+                    }
+                ]
+            };
+        }
+        return data;
+    };
+
+    const [formData, setFormData] = useState(() => normalizeData(initialData));
 
     useEffect(() => {
         if (initialData) {
-            setFormData(initialData);
+            setFormData(normalizeData(initialData));
         }
     }, [initialData]);
 
@@ -82,28 +108,88 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
         }));
     };
 
+    // Helper to get current active specs safely
+    const getActiveSpecs = () => {
+        return formData.versions[activeVersionIndex]?.specs || defaultSpecs;
+    };
+
     const handleSpecChange = (e) => {
         const { name, value, type, checked } = e.target;
 
-        // If toggling electric mode, auto-set fuel type
-        if (name === 'isElectric') {
-            setFormData(prev => ({
+        setFormData(prev => {
+            const newVersions = [...prev.versions];
+            // Ensure the version object exists
+            if (!newVersions[activeVersionIndex]) {
+                newVersions[activeVersionIndex] = { name: 'Nueva Versión', specs: { ...defaultSpecs } };
+            }
+
+            const currentSpecs = { ...newVersions[activeVersionIndex].specs };
+
+            // If toggling electric mode, auto-set fuel type
+            if (name === 'isElectric') {
+                currentSpecs.isElectric = checked;
+                currentSpecs.fuelType = checked ? 'Eléctrico' : currentSpecs.fuelType;
+            } else {
+                currentSpecs[name] = type === 'checkbox' ? checked : value;
+            }
+
+            newVersions[activeVersionIndex] = {
+                ...newVersions[activeVersionIndex],
+                specs: currentSpecs
+            };
+
+            return {
                 ...prev,
-                specs: {
-                    ...prev.specs,
-                    isElectric: checked,
-                    fuelType: checked ? 'Eléctrico' : prev.specs.fuelType
+                versions: newVersions
+            };
+        });
+    };
+
+    const addVersion = () => {
+        setFormData(prev => ({
+            ...prev,
+            versions: [
+                ...prev.versions,
+                {
+                    name: `Versión ${prev.versions.length + 1}`,
+                    // Clone the specs from the currently active version for easier editing
+                    specs: { ...prev.versions[activeVersionIndex].specs }
                 }
-            }));
-        } else {
-            setFormData(prev => ({
+            ]
+        }));
+        // Switch to the new version
+        setActiveVersionIndex(formData.versions.length);
+    };
+
+    const removeVersion = (index) => {
+        if (formData.versions.length <= 1) return; // Prevent deleting the last version
+
+        setFormData(prev => {
+            const newVersions = prev.versions.filter((_, i) => i !== index);
+            return {
                 ...prev,
-                specs: {
-                    ...prev.specs,
-                    [name]: type === 'checkbox' ? checked : value
-                }
-            }));
+                versions: newVersions
+            };
+        });
+
+        // Adjust active index
+        if (activeVersionIndex >= index && activeVersionIndex > 0) {
+            setActiveVersionIndex(activeVersionIndex - 1);
         }
+    };
+
+    const updateVersionName = (name) => {
+        setFormData(prev => {
+            const newVersions = [...prev.versions];
+            newVersions[activeVersionIndex] = {
+                ...newVersions[activeVersionIndex],
+                name: name
+            };
+            return {
+                ...prev,
+                versions: newVersions
+            };
+        });
     };
 
     const nextStep = () => {
@@ -119,15 +205,21 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
     };
 
     const handleSubmit = () => {
-        // Ensure year is integer
+        // Prepare data for submission
         const submissionData = {
             ...formData,
-            year: parseInt(formData.year)
+            year: parseInt(formData.year),
+            // Ensure valid integer
+            // Sync root specs with the first version (or the "Display" version) for backward compatibility
+            specs: formData.versions[0]?.specs || defaultSpecs
         };
         onSubmit(submissionData);
     };
 
     const renderStepContent = () => {
+        const activeSpecs = getActiveSpecs();
+        const activeVersion = formData.versions[activeVersionIndex];
+
         switch (currentStep) {
             case 0:
                 return (
@@ -173,7 +265,7 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Versión *
+                                    Título / Versión Principal (Display) *
                                 </label>
                                 <input
                                     type="text"
@@ -182,8 +274,9 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
                                     onChange={handleInputChange}
                                     required
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="Ej: SE, Limited, GT"
+                                    placeholder="Ej: Gama 2024, Nueva Generación"
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Este texto aparecerá bajo el nombre del auto en la lista principal.</p>
                             </div>
                         </div>
                         <div>
@@ -206,167 +299,228 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
             case 1:
                 return (
                     <div className="space-y-6">
-                        {/* Electric Car Toggle */}
-                        <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                            <div className={`p-3 rounded-full ${formData.specs.isElectric ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
-                                <Zap className="h-6 w-6" />
+                        {/* Versions Tabs */}
+                        <div className="flex flex-col space-y-4">
+                            <div className="flex items-center justify-between">
+                                <label className="block text-lg font-bold text-gray-900 dark:text-white">
+                                    Versiones y Especificaciones
+                                </label>
+                                <button
+                                    onClick={addVersion}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-all text-sm font-medium shadow-sm"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Nueva Versión
+                                </button>
                             </div>
-                            <div className="flex-1">
-                                <h4 className="font-bold text-gray-900 dark:text-white">Vehículo Eléctrico</h4>
-                                <p className="text-sm text-gray-500">Marca esta opción si el auto es 100% eléctrico</p>
+
+                            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                {formData.versions.map((v, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setActiveVersionIndex(idx)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap border ${activeVersionIndex === idx
+                                            ? 'bg-white dark:bg-slate-800 border-primary-500 text-primary-600 dark:text-primary-400 shadow-md ring-1 ring-primary-500'
+                                            : 'bg-gray-50 dark:bg-slate-900/50 border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                            }`}
+                                    >
+                                        {v.name || `Versión ${idx + 1}`}
+                                        {formData.versions.length > 1 && activeVersionIndex === idx && (
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeVersion(idx);
+                                                }}
+                                                className="ml-1 p-0.5 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-red-500"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="isElectric"
-                                    checked={formData.specs.isElectric}
-                                    onChange={handleSpecChange}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                            </label>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <AutocompleteInput
-                                    label="Motor / Propulsión"
-                                    name="engine"
-                                    value={formData.specs.engine}
-                                    onChange={handleSpecChange}
-                                    options={formData.specs.isElectric ? electricMotorTypes : engineTypes}
-                                    placeholder={formData.specs.isElectric ? "Selecciona tipo de motor eléctrico" : "Ej: 2.0L 4-Cilindros Turbo"}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    {formData.specs.isElectric ? 'Potencia' : 'Caballos de Fuerza'}
+                        <div className="p-6 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 relative">
+                            {/* Version Name Input */}
+                            <div className="mb-6">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                    Nombre de esta versión (Ej: GLX, Limited)
                                 </label>
                                 <input
                                     type="text"
-                                    name="horsepower"
-                                    value={formData.specs.horsepower}
-                                    onChange={handleSpecChange}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder={formData.specs.isElectric ? "Ej: 283 kW (380 hp)" : "Ej: 169 hp"}
+                                    value={activeVersion?.name || ''}
+                                    onChange={(e) => updateVersionName(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white"
+                                    placeholder="Nombre de la versión"
                                 />
                             </div>
 
-                            {/* Transmission Section */}
-                            <div>
-                                <AutocompleteInput
-                                    label="Tipo de Transmisión"
-                                    name="transmissionType"
-                                    value={formData.specs.transmissionType}
-                                    onChange={handleSpecChange}
-                                    options={transmissionTypes}
-                                    placeholder="Ej: Automática"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Detalle Transmisión (Opcional)
-                                </label>
-                                <input
-                                    type="text"
-                                    name="transmission"
-                                    value={formData.specs.transmission}
-                                    onChange={handleSpecChange}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="Ej: CVT Direct Shift de 10 vel."
-                                />
-                            </div>
+                            <div className="h-px bg-gray-200 dark:bg-gray-700 mb-6 mx-2" />
 
-                            {/* Fuel/Battery Section */}
-                            {formData.specs.isElectric ? (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Autonomía (km)
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="batteryRange"
-                                            value={formData.specs.batteryRange}
-                                            onChange={handleSpecChange}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent pl-10"
-                                            placeholder="Ej: 450 km"
-                                        />
-                                        <Battery className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                    </div>
+                            {/* Electric Car Toggle */}
+                            <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-700 mb-6">
+                                <div className={`p-3 rounded-full ${activeSpecs.isElectric ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
+                                    <Zap className="h-6 w-6" />
                                 </div>
-                            ) : (
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-gray-900 dark:text-white">Vehículo Eléctrico</h4>
+                                    <p className="text-sm text-gray-500">Esta versión es 100% eléctrica</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="isElectric"
+                                        checked={activeSpecs.isElectric || false}
+                                        onChange={handleSpecChange}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                                </label>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <AutocompleteInput
+                                        label="Motor / Propulsión"
+                                        name="engine"
+                                        value={activeSpecs.engine}
+                                        onChange={handleSpecChange}
+                                        options={activeSpecs.isElectric ? electricMotorTypes : engineTypes}
+                                        placeholder={activeSpecs.isElectric ? "Selecciona tipo de motor eléctrico" : "Ej: 2.0L 4-Cilindros Turbo"}
+                                    />
+                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Tipo de Combustible
+                                        {activeSpecs.isElectric ? 'Potencia' : 'Caballos de Fuerza'}
                                     </label>
                                     <input
                                         type="text"
-                                        name="fuelType"
-                                        value={formData.specs.fuelType}
+                                        name="horsepower"
+                                        value={activeSpecs.horsepower}
                                         onChange={handleSpecChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        placeholder="Ej: Gasolina"
-                                        list="fuelTypeOptions"
+                                        placeholder={activeSpecs.isElectric ? "Ej: 283 kW (380 hp)" : "Ej: 169 hp"}
                                     />
-                                    <datalist id="fuelTypeOptions">
-                                        {fuelTypes.map(type => (
-                                            <option key={type} value={type} />
-                                        ))}
-                                    </datalist>
                                 </div>
-                            )}
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Consumo / Eficiencia
-                                </label>
-                                <input
-                                    type="text"
-                                    name="fuelEconomy"
-                                    value={formData.specs.fuelEconomy}
-                                    onChange={handleSpecChange}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder={formData.specs.isElectric ? "Ej: 18 kWh/100km" : "Ej: 15 km/l mixto"}
-                                />
-                            </div>
+                                {/* Transmission Section */}
+                                <div>
+                                    <AutocompleteInput
+                                        label="Tipo de Transmisión"
+                                        name="transmissionType"
+                                        value={activeSpecs.transmissionType}
+                                        onChange={handleSpecChange}
+                                        options={transmissionTypes}
+                                        placeholder="Ej: Automática"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Detalle Transmisión (Opcional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="transmission"
+                                        value={activeSpecs.transmission}
+                                        onChange={handleSpecChange}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="Ej: CVT Direct Shift de 10 vel."
+                                    />
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Tracción
-                                </label>
-                                <select
-                                    name="drivetrain"
-                                    value={formData.specs.drivetrain}
-                                    onChange={handleSpecChange}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                >
-                                    <option value="">Seleccionar...</option>
-                                    <option value="FWD">FWD (Delantera)</option>
-                                    <option value="RWD">RWD (Trasera)</option>
-                                    <option value="AWD">AWD (Todas las ruedas)</option>
-                                    <option value="4WD">4WD (4x4)</option>
-                                </select>
-                            </div>
+                                {/* Fuel/Battery Section */}
+                                {activeSpecs.isElectric ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Autonomía (km)
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="batteryRange"
+                                                value={activeSpecs.batteryRange}
+                                                onChange={handleSpecChange}
+                                                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent pl-10"
+                                                placeholder="Ej: 450 km"
+                                            />
+                                            <Battery className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Tipo de Combustible
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="fuelType"
+                                            value={activeSpecs.fuelType}
+                                            onChange={handleSpecChange}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            placeholder="Ej: Gasolina"
+                                            list="fuelTypeOptions"
+                                        />
+                                        <datalist id="fuelTypeOptions">
+                                            {fuelTypes.map(type => (
+                                                <option key={type} value={type} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                )}
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Aceleración 0-100 km/h (Opcional)
-                                </label>
-                                <input
-                                    type="text"
-                                    name="acceleration0to100"
-                                    value={formData.specs.acceleration0to100}
-                                    onChange={handleSpecChange}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="Ej: 5.8 segundos"
-                                />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Consumo / Eficiencia
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="fuelEconomy"
+                                        value={activeSpecs.fuelEconomy}
+                                        onChange={handleSpecChange}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder={activeSpecs.isElectric ? "Ej: 18 kWh/100km" : "Ej: 15 km/l mixto"}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Tracción
+                                    </label>
+                                    <select
+                                        name="drivetrain"
+                                        value={activeSpecs.drivetrain}
+                                        onChange={handleSpecChange}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    >
+                                        <option value="">Seleccionar...</option>
+                                        <option value="FWD">FWD (Delantera)</option>
+                                        <option value="RWD">RWD (Trasera)</option>
+                                        <option value="AWD">AWD (Todas las ruedas)</option>
+                                        <option value="4WD">4WD (4x4)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Aceleración 0-100 km/h (Opcional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="acceleration0to100"
+                                        value={activeSpecs.acceleration0to100}
+                                        onChange={handleSpecChange}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="Ej: 5.8 segundos"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 );
 
             case 2:
+                // Photos Step - Unchanged mostly, except we could tag photos per version later, but for now global photos
                 return (
                     <div className="space-y-6">
                         <div>
@@ -472,25 +626,20 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
                                     <span className="text-green-900 dark:text-green-100">{formData.year}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-green-700 dark:text-green-300 font-medium">Versión:</span>
+                                    <span className="text-green-700 dark:text-green-300 font-medium">Versión Texto:</span>
                                     <span className="text-green-900 dark:text-green-100">{formData.version}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-green-700 dark:text-green-300 font-medium">Motor:</span>
-                                    <span className="text-green-900 dark:text-green-100">{formData.specs.engine}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-green-700 dark:text-green-300 font-medium">Transmisión:</span>
-                                    <span className="text-green-900 dark:text-green-100">
-                                        {formData.specs.transmissionType} {formData.specs.transmission ? `(${formData.specs.transmission})` : ''}
-                                    </span>
-                                </div>
-                                {formData.specs.isElectric && (
-                                    <div className="flex justify-between">
-                                        <span className="text-green-700 dark:text-green-300 font-medium">Autonomía:</span>
-                                        <span className="text-green-900 dark:text-green-100">{formData.specs.batteryRange}</span>
+
+                                <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800">
+                                    <span className="block text-green-700 dark:text-green-300 font-medium mb-2">Versiones Configuradas:</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {formData.versions.map((v, i) => (
+                                            <span key={i} className="px-2 py-1 bg-white dark:bg-green-900/40 rounded border border-green-200 dark:border-green-800 text-xs text-green-800 dark:text-green-100">
+                                                {v.name}
+                                            </span>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -504,7 +653,7 @@ const CarForm = ({ initialData, onSubmit, loading, submitLabel = "Publicar Auto"
     return (
         <div>
             {/* Progress Steps */}
-            <div className="mb-8">
+            <div className="mb-8 sticky top-0 z-30 bg-white/95 dark:bg-[#121212]/95 backdrop-blur-sm py-4 border-b border-transparent">
                 <div className="flex items-center justify-between">
                     {steps.map((step, index) => {
                         const Icon = step.icon;

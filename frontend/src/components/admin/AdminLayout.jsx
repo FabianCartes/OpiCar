@@ -58,11 +58,31 @@ const AdminLayout = ({ children, onNavigate, currentView }) => {
                                     );
                                 }
 
+                                // If we have onNavigate (we are in Dashboard), use button
+                                if (onNavigate) {
+                                    return (
+                                        <button
+                                            key={item.label}
+                                            onClick={() => onNavigate(item.view)}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
+                                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                }`}
+                                        >
+                                            <Icon className="h-5 w-5" />
+                                            <span className="font-medium">{item.label}</span>
+                                            {active && <ChevronRight className="h-4 w-4 ml-auto" />}
+                                        </button>
+                                    );
+                                }
+
+                                // If we don't have onNavigate (we are in CreateCar or other subpages), use Link with state
                                 return (
-                                    <button
+                                    <Link
                                         key={item.label}
-                                        onClick={() => onNavigate && onNavigate(item.view)}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
+                                        to="/admin"
+                                        state={{ view: item.view }}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
                                             ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
                                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                                             }`}
@@ -70,7 +90,7 @@ const AdminLayout = ({ children, onNavigate, currentView }) => {
                                         <Icon className="h-5 w-5" />
                                         <span className="font-medium">{item.label}</span>
                                         {active && <ChevronRight className="h-4 w-4 ml-auto" />}
-                                    </button>
+                                    </Link>
                                 );
                             })}
                         </nav>

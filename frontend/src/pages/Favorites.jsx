@@ -91,7 +91,7 @@ const Favorites = () => {
                         </p>
                         <button
                             onClick={() => navigate('/search')}
-                            className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-primary-500/20 transition-all transform hover:-translate-y-0.5"
+                            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-primary-500/20 transition-all transform hover:-translate-y-0.5"
                         >
                             Explorar Autos
                         </button>
