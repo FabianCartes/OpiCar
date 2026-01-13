@@ -107,6 +107,11 @@ const ReviewCard = ({ review, onDelete }) => {
                             <p className="font-semibold text-gray-900 dark:text-white text-sm hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{review.user?.username || 'Usuario'}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {new Date(review.created_at).toLocaleDateString()}
+                                {review.specificVersion && (
+                                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                        {review.specificVersion}
+                                    </span>
+                                )}
                             </p>
                         </div>
                     </div>

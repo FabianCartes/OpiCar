@@ -120,6 +120,11 @@ const ReviewDetailsModal = ({ isOpen, onClose, review }) => {
                                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                                         <Calendar className="h-3 w-3" />
                                         {new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        {review.specificVersion && (
+                                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                Versión: {review.specificVersion}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

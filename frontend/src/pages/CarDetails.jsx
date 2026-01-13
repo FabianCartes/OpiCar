@@ -486,6 +486,19 @@ const CarDetails = () => {
                     </div>
                 </div>
 
+                {/* Description Section */}
+                {car.description && (
+                    <div className="glass-card p-6 rounded-3xl mb-8">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <Info className="h-5 w-5 text-primary-500" />
+                            Descripción del Vehículo
+                        </h2>
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                            {car.description}
+                        </p>
+                    </div>
+                )}
+
                 {/* Fallas Comunes & Cotizar/Comprar Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                     <div className="glass-card p-6 rounded-3xl border-l-4 border-yellow-400 dark:border-yellow-500">
@@ -579,6 +592,7 @@ const CarDetails = () => {
                                     carId={id}
                                     onSubmit={handleReviewSubmit}
                                     onCancel={() => setShowReviewForm(false)}
+                                    versions={car.versions}
                                 />
                             </div>
                         )

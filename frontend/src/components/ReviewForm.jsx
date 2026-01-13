@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Star, AlertTriangle, Image as ImageIcon, X, HelpCircle, Upload, ChevronRight, ChevronDown, MessageSquare } from 'lucide-react';
 import { uploadImage } from '../services/review.service';
 
-const ReviewForm = ({ carId, onSubmit, onCancel }) => {
+const ReviewForm = ({ carId, onSubmit, onCancel, versions }) => {
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -12,6 +12,7 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [expandedCategories, setExpandedCategories] = useState([]);
+    const [specificVersion, setSpecificVersion] = useState('');
     const fileInputRef = useRef(null);
 
     // Hierarchical faults list
@@ -87,7 +88,8 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
             positiveComment: '',
             negativeComment: '',
             failureTags: failureTags,
-            photos: photos
+            photos: photos,
+            specificVersion: specificVersion
         };
 
         try {
@@ -106,6 +108,13 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
     const handleFileUpload = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
+
+        if (photos.length + files.length > 5) {
+            setError('Solo puedes subir un máximo de 5 fotos por reseña.');
+            // Clear the input so they can try again with fewer files
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
 
         setUploading(true);
         try {
@@ -213,6 +222,29 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
                     </div>
                 </div>
 
+
+
+                {/* Optional Version Selection */}
+                {
+                    versions && versions.length > 0 && (
+                        <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Versión Específica (Opcional)
+                            </label>
+                            <select
+                                value={specificVersion}
+                                onChange={(e) => setSpecificVersion(e.target.value)}
+                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
+                            >
+                                <option value="">Selecciona una versión (General)</option>
+                                {versions.map((v, idx) => (
+                                    <option key={idx} value={v.name}>{v.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )
+                }
+
                 {/* 2. Comment Section */}
                 <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
@@ -270,7 +302,7 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                         <ImageIcon className="h-4 w-4 text-blue-500" />
-                        Fotos del Auto
+                        Fotos del Auto (Max 5)
                     </label>
                     <div className="flex flex-wrap gap-3">
                         <input
@@ -284,15 +316,18 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-500 hover:border-primary-500 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-slate-800/50"
+                            disabled={uploading || photos.length >= 5}
+                            className={`w-24 h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-colors ${photos.length >= 5
+                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed dark:border-gray-700 dark:bg-slate-800/30'
+                                : 'border-gray-300 dark:border-gray-600 text-gray-500 hover:border-primary-500 hover:text-primary-500 bg-gray-50 dark:bg-slate-800/50'
+                                }`}
                         >
                             {uploading ? (
                                 <div className="animate-spin h-6 w-6 border-2 border-primary-500 border-t-transparent rounded-full" />
                             ) : (
                                 <>
                                     <Upload className="h-6 w-6 mb-1" />
-                                    <span className="text-xs">Subir</span>
+                                    <span className="text-xs">{photos.length >= 5 ? 'Máx 5' : 'Subir'}</span>
                                 </>
                             )}
                         </button>
@@ -329,8 +364,8 @@ const ReviewForm = ({ carId, onSubmit, onCancel }) => {
                         {loading ? 'Publicando...' : 'Publicar Reseña'}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 };
 
