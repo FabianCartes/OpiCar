@@ -4,6 +4,8 @@ import { Search, ShieldCheck, Zap, Award, ChevronRight, Gauge, Flame, Trophy } f
 import CarCard from '../components/CarCard';
 import { getPopularCars } from '../services/car.service';
 
+import FloatingDecorations from '../components/FloatingDecorations';
+
 const Home = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -78,6 +80,7 @@ const Home = () => {
         <div className="min-h-screen">
             {/* Hero Section */}
             <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+
                 {/* Dynamic Animated Background */}
                 <div className="absolute inset-0 bg-gray-50 dark:bg-dark-bg transition-colors duration-500">
                     {/* Racing Cars Effect - Animated lines simulating highway traffic */}
@@ -209,6 +212,8 @@ const Home = () => {
                     </div>
                 </div>
 
+                {/* Floating Parallax Decorations - removed from here */}
+
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     {/* Badge */}
                     <div
@@ -221,10 +226,10 @@ const Home = () => {
                     {/* Main heading */}
                     <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter italic uppercase perspective-1000">
                         <div className="text-slate-900 dark:text-white">
-                            {React.useMemo(() => <AnimatedText text="Descubre tu " delay={0.3} />, [isLoaded])}
+                            {React.useMemo(() => <AnimatedText text="La voz de los " delay={0.3} />, [isLoaded])}
                         </div>
-                        <div>
-                            {React.useMemo(() => <AnimatedText text="Potencial" delay={0.7} gradient={true} />, [isLoaded])}
+                        <div className="inline-block overflow-visible pr-6">
+                            {React.useMemo(() => <AnimatedText text="Conductores" delay={0.7} gradient={true} />, [isLoaded])}
                         </div>
                     </h1>
 
@@ -232,7 +237,7 @@ const Home = () => {
                     <p
                         className={`text-xl md:text-2xl mb-10 text-slate-600 dark:text-slate-300 max-w-3xl mx-auto font-light leading-relaxed transition-all duration-1000 delay-[1200ms] ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                     >
-                        La plataforma definitiva para entusiastas. <span className="font-semibold text-slate-900 dark:text-white">Reseñas reales</span>, especificaciones técnicas y la comunidad más activa.
+                        Conoce la realidad antes de comprar. Accede a reseñas honestas, fotos de usuarios y reportes de fallas detallados por la comunidad más activa.
                     </p>
 
                     {/* CTA Buttons */}
@@ -258,6 +263,9 @@ const Home = () => {
 
             {/* Bento Grid Features Section */}
             <section ref={cardsRef} className="py-24 bg-white dark:bg-[#0a0a0a] relative overflow-hidden">
+                {/* Floating Decorations Background */}
+                <FloatingDecorations />
+
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white italic uppercase mb-4">
@@ -269,7 +277,7 @@ const Home = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[600px]">
                         {/* Large Feature - Community (Spans 2 cols, 2 rows) */}
-                        <div className={`md:col-span-2 md:row-span-2 group relative rounded-[2rem] overflow-hidden bg-slate-50 dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-100 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                        <div className={`md:col-span-2 md:row-span-2 group relative rounded-[2rem] overflow-hidden bg-slate-100 dark:bg-[#121212] border border-slate-200 dark:border-white/5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-100 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
                             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-700">
                                 <Trophy className="h-64 w-64 text-primary-600" />
@@ -307,7 +315,7 @@ const Home = () => {
                         </div>
 
                         {/* Small Feature - Trust (Spans 1 col, 1 row) */}
-                        <div className={`md:col-span-1 md:row-span-1 group relative rounded-[2rem] overflow-hidden bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/20 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-300 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                        <div className={`md:col-span-1 md:row-span-1 group relative rounded-[2rem] overflow-hidden bg-primary-100 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-900/20 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-300 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
                                 <ShieldCheck className="h-32 w-32 text-primary-600" />
                             </div>
@@ -321,7 +329,7 @@ const Home = () => {
                         </div>
 
                         {/* Small Feature - Community (Spans 1 col, 1 row) */}
-                        <div className={`md:col-span-1 md:row-span-1 group relative rounded-[2rem] overflow-hidden bg-white dark:bg-[#121212] border border-slate-100 dark:border-white/5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-400 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                        <div className={`md:col-span-1 md:row-span-1 group relative rounded-[2rem] overflow-hidden bg-slate-50 dark:bg-[#121212] border border-slate-200 dark:border-white/5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary-500/30 delay-400 ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
                             <div className="relative h-full p-8 flex flex-col justify-center">
                                 <Award className="h-10 w-10 text-orange-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
                                 <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 italic uppercase">Comunidad</h3>

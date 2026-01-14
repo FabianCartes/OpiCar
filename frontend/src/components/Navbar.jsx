@@ -39,12 +39,10 @@ const Navbar = () => {
                 <div className="flex justify-between h-16 items-center">
                     {/* Logo */}
                     <div className="flex-shrink-0 flex items-center">
-                        <Link to="/" className="flex items-center gap-2 group">
-                            <div className="bg-primary-600 p-2 rounded-xl shadow-lg group-hover:shadow-primary-500/30 transition-all duration-300">
-                                <Car className="h-6 w-6 text-white" />
-                            </div>
-                            <span className="text-2xl font-bold text-gradient">
-                                AutoReal
+                        <Link to="/" className="flex items-center gap-1 group select-none">
+                            <span className="text-3xl font-extrabold italic tracking-tight font-sans drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                                <span className="text-white">Opi</span>
+                                <span className="text-primary-600">Car</span>
                             </span>
                         </Link>
                     </div>

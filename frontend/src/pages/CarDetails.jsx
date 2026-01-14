@@ -505,6 +505,25 @@ const CarDetails = () => {
                         <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
                             <AlertTriangle className="h-6 w-6 text-yellow-500 mr-2" />
                             Fallas Comunes
+                            <div
+                                className="relative flex items-center ml-2"
+                                onMouseEnter={() => setActiveTooltip('commonFaults')}
+                                onMouseLeave={() => setActiveTooltip(null)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveTooltip(activeTooltip === 'commonFaults' ? null : 'commonFaults');
+                                }}
+                            >
+                                <Info
+                                    className={`h-4 w-4 cursor-help transition-colors ${activeTooltip === 'commonFaults' ? 'text-primary-500' : 'text-gray-400 hover:text-primary-500'}`}
+                                />
+                                {activeTooltip === 'commonFaults' && (
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-900 dark:bg-gray-800 text-white text-xs p-3 rounded-xl shadow-xl z-50 text-center leading-relaxed animate-fade-in font-normal">
+                                        Aquí aparecerán las fallas que más se repiten en las reseñas de los usuarios, para que sepas qué es lo que más falla en este auto.
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                                    </div>
+                                )}
+                            </div>
                         </h2>
                         <ul className="space-y-3">
                             {commonFaults.length > 0 ? commonFaults.map((fault, idx) => (
