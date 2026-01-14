@@ -64,7 +64,7 @@ const Home = () => {
                 {text.split('').map((char, index) => (
                     <span
                         key={index}
-                        className={`inline-block transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${gradient ? 'text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-500 dark:to-primary-400' : ''}`}
+                        className={`inline-block transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${gradient ? 'text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-500 dark:to-primary-400 pr-1' : ''}`}
                         style={{
                             transitionDelay: `${delay + index * 0.03}s`
                         }}
@@ -162,8 +162,7 @@ const Home = () => {
                             style={{
                                 background: 'radial-gradient(circle, var(--color-primary-500) 0%, transparent 70%)',
                                 filter: 'blur(60px)',
-                                animation: isLoaded ? 'smoke-rise 4s ease-out infinite' : 'none',
-                                animationDelay: '0s'
+                                animation: isLoaded ? 'smoke-rise 4s ease-out 0s infinite' : 'none'
                             }}
                         ></div>
                         {/* Rising Puff 2 */}
@@ -172,8 +171,7 @@ const Home = () => {
                             style={{
                                 background: 'radial-gradient(circle, var(--color-primary-400) 0%, transparent 70%)',
                                 filter: 'blur(60px)',
-                                animation: isLoaded ? 'smoke-rise 5s ease-out infinite' : 'none',
-                                animationDelay: '2.5s'
+                                animation: isLoaded ? 'smoke-rise 5s ease-out 2.5s infinite' : 'none'
                             }}
                         ></div>
                     </div>
@@ -195,8 +193,7 @@ const Home = () => {
                             style={{
                                 background: 'radial-gradient(circle, var(--smoke-white) 0%, transparent 70%)',
                                 filter: 'blur(60px)',
-                                animation: isLoaded ? 'smoke-rise 6s ease-out infinite' : 'none',
-                                animationDelay: '1s'
+                                animation: isLoaded ? 'smoke-rise 6s ease-out 1s infinite' : 'none'
                             }}
                         ></div>
                         {/* Rising Puff 2 */}
@@ -205,8 +202,7 @@ const Home = () => {
                             style={{
                                 background: 'radial-gradient(circle, var(--smoke-white) 0%, transparent 70%)',
                                 filter: 'blur(60px)',
-                                animation: isLoaded ? 'smoke-rise 7s ease-out infinite' : 'none',
-                                animationDelay: '4s'
+                                animation: isLoaded ? 'smoke-rise 7s ease-out 4s infinite' : 'none'
                             }}
                         ></div>
                     </div>
@@ -373,8 +369,7 @@ const Home = () => {
                         style={{
                             background: 'radial-gradient(circle, rgba(200,200,200,0.6) 0%, transparent 70%)',
                             filter: 'blur(60px)',
-                            animation: isLoaded ? 'smoke-rise 8s ease-out infinite' : 'none',
-                            animationDelay: '2s'
+                            animation: isLoaded ? 'smoke-rise 8s ease-out 2s infinite' : 'none'
                         }}
                     ></div>
                 </div>
@@ -394,8 +389,7 @@ const Home = () => {
                         style={{
                             background: 'radial-gradient(circle, var(--color-primary-400) 0%, transparent 70%)',
                             filter: 'blur(60px)',
-                            animation: isLoaded ? 'smoke-rise 9s ease-out infinite' : 'none',
-                            animationDelay: '1s'
+                            animation: isLoaded ? 'smoke-rise 9s ease-out 1s infinite' : 'none'
                         }}
                     ></div>
                 </div>

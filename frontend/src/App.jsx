@@ -14,6 +14,8 @@ import Favorites from './pages/Favorites';
 import AdminRoute from './components/AdminRoute';
 import Dashboard from './pages/admin/Dashboard';
 import CreateCar from './pages/admin/CreateCar';
+import LegalPage from './pages/LegalPage';
+import TermsPage from './pages/TermsPage';
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
             <Route path="/admin/create-car" element={<AdminRoute><CreateCar /></AdminRoute>} />
+            <Route path="/privacy" element={<LegalPage />} />
+            <Route path="/terms" element={<TermsPage />} />
           </Routes>
         </main>
         <Footer />

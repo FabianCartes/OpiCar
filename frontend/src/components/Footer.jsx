@@ -15,12 +15,12 @@ const Footer = () => {
                         <Link to="/feedback" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
                             Sugerencias
                         </Link>
-                        <a href="#" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
+                        <Link to="/privacy" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
                             Política de Privacidad
-                        </a>
-                        <a href="#" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
+                        </Link>
+                        <Link to="/terms" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors">
                             Términos de Servicio
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
